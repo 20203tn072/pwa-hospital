@@ -22,7 +22,7 @@ public class DataInitializer {
                 // Contraseña "12345" encriptada con BCrypt
                 newUser.setPassword("123");
                 newUser.setRole("island");
-                newUser.setNeedAuthentication(false); // O true, según prefieras, pero dijiste 0
+                newUser.setNeedAuthentication(true); // O true, según prefieras, pero dijiste 0
 
                 repository.save(newUser);
                 System.out.println(">> USUARIO 'isla' CREADO AUTOMÁTICAMENTE");
