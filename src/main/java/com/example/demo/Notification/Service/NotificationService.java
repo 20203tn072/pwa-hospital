@@ -14,7 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -33,6 +35,26 @@ public class NotificationService {
             // TODO: User must place 'serviceAccountKey.json' in src/main/resources
             // If checking fails, we log an error but don't crash app start for other
             // features
+            // 1. Prioridad: Variable de Entorno (Producción/Railway)
+            String envCredentials = System.getenv("FIREBASE_CREDENTIALS");
+
+            if (envCredentials != null && !envCredentials.isEmpty()) {
+                log.info("Found FIREBASE_CREDENTIALS in Environment Variables. Using it.");
+                try (ByteArrayInputStream is = new ByteArrayInputStream(
+                        envCredentials.getBytes(StandardCharsets.UTF_8))) {
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(is))
+                            .build();
+
+                    if (FirebaseApp.getApps().isEmpty()) {
+                        FirebaseApp.initializeApp(options);
+                        log.info("Firebase Application Initialized from Environment Variable");
+                    }
+                    return; // Early exit successful
+                }
+            }
+
+            // 2. Fallback: Archivo Local (Desarrollo)
             ClassPathResource resource = new ClassPathResource("serviceAccountKey.json");
             if (resource.exists()) {
                 FirebaseOptions options = FirebaseOptions.builder()
